@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 641ac8e13d83e45c5864d397b20c2f82, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GameConfig
+  gravityScale: 1.8
+  flapVelocity: 5
+  terminalVelocity: -10
+  flapPitch: 25
+  divePitch: -90
+  diveVelocityThreshold: -4
+  rotationLerpSpeed: 8
+  ceilingY: 2.4
+  scrollSpeed: 1.6
+  pipeSpacing: 1.8
+  gapHeight: 1.2
+  gapCenterMin: -0.44
+  gapCenterMax: 1.56
+  restartLockout: 0.5
