@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Working title** | Flappy Bird Clone (`Unity101-FlappyBirb`) |
-| **Team** | Unity101 course project |
+| **Team** | Doctor Unity (123456789) & Mr Unreal (987654321) |
 | **Genre** | Arcade / endless obstacle-dodger / one-button score-chaser |
 | **Target platform** | PC (Windows) + macOS, standalone. iOS/Android buildable but untested on device |
 | **Engine** | Unity 6 (`6000.3.20f1`), URP 17.3, 2D, Input System 1.19 |
