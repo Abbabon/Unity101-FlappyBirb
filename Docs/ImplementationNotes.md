@@ -1,6 +1,6 @@
 # Implementation Notes
 
-Status as of 2026-07-19: the MVP scope in [GDD.md](GDD.md) §9.1 is **implemented and playtested** (autopilot smoke test scored 2 points, death + game-over + best-score persistence verified in play mode).
+Status as of 2026-07-19: the MVP scope in [GDD.md](GDD.md) §8.1 is **implemented and playtested** (autopilot smoke test scored 2 points, death + game-over + best-score persistence verified in play mode).
 
 ## What's where
 
@@ -9,8 +9,8 @@ Status as of 2026-07-19: the MVP scope in [GDD.md](GDD.md) §9.1 is **implemente
 | Playable scene (only scene in Build Settings) | `Assets/Scenes/Game.unity` |
 | Runtime scripts | `Assets/Game/Scripts/` |
 | Scene builder (regenerates everything) | `Assets/Game/Editor/GameSetup.cs` → menu **Tools ▸ Flappy Bird ▸ Build Game Scene** |
-| Tuning values (GDD §4) | `Assets/Game/GameConfig.asset` (ScriptableObject) |
-| Classic sprites/audio | `Assets/Game/Sprites/`, `Assets/Game/Audio/` — **do not ship publicly**, see GDD §7 |
+| Tuning values (GDD §3) | `Assets/Game/GameConfig.asset` (ScriptableObject) |
+| Classic sprites/audio | `Assets/Game/Sprites/`, `Assets/Game/Audio/` — **do not ship publicly**, see GDD §6 |
 | Pipe pair prefab (pooled) | `Assets/Game/Prefabs/PipePair.prefab` |
 
 ## Script map
@@ -29,6 +29,6 @@ Status as of 2026-07-19: the MVP scope in [GDD.md](GDD.md) §9.1 is **implemente
 
 Open `Assets/Scenes/Game.unity`, press Play. Tap/click/Space to flap. Portrait (9:16) Game View recommended.
 
-## Not yet implemented (GDD §9.2 polish; see §9.3 for what was cut on purpose)
+## Not yet implemented (GDD §8.2 polish; see §8.3 for what was cut on purpose)
 
-Mute toggle, per-digit widths in `ScoreDisplay`, results-panel score count-up, and on-device mobile testing. Title screen, medals and a pause screen are **not** pending work — they were cut on purpose; see GDD §9.3 for why.
+Mute toggle, per-digit widths in `ScoreDisplay`, results-panel score count-up, and on-device mobile testing. Title screen, medals and a pause screen are **not** pending work — they were cut on purpose; see GDD §8.3 for why.

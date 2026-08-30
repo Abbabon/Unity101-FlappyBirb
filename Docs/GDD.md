@@ -11,9 +11,9 @@
 | **Session length** | 10 seconds – 5 minutes |
 | **Document version** | v2.0 — 2026-08-30 |
 
-> **Status legend used throughout:** ✅ built and playtested · 🔨 planned · ✂️ deliberately cut.
-> This document describes the game as it actually is. Where it describes something that does not exist
-> yet, it says so.
+> This document describes the game as it actually is, not as it was first imagined. Where something
+> described here has not been built, or was deliberately dropped, the text says so in the sentence that
+> describes it.
 
 ---
 
@@ -28,7 +28,7 @@ takes under two seconds.
 
 1. **One input, total depth** — the entire skill ceiling lives in the timing of a single button. *Rejects:* a dash, a shield, a second button, anything with a cooldown.
 2. **Instant restart** — failure costs pride and nothing else; death to next run is under two seconds. *Rejects:* results animations that cannot be skipped, an unlockable meta-layer, a loading screen.
-3. **Absolute fairness** — fixed gap size, no difficulty ramp, deterministic physics at a fixed 50 Hz. Every death is the player's fault and must feel like it. *Rejects:* power-ups, random wind, adaptive difficulty, and — importantly — any frame hitch during play, which is why §8 has a zero-allocation rule.
+3. **Absolute fairness** — fixed gap size, no difficulty ramp, deterministic physics at a fixed 50 Hz. Every death is the player's fault and must feel like it. *Rejects:* power-ups, random wind, adaptive difficulty, and — importantly — any frame hitch during play, which is why §7 has a zero-allocation rule.
 
 ---
 
@@ -38,7 +38,7 @@ takes under two seconds.
 
 - **Primary reference:** *Flappy Bird*, Dong Nguyen / .GEARS, 2013. [Gameplay video](https://www.youtube.com/shorts/oMMGCsbHoN8).
 - **Taking:** the exact feel — velocity-replacing flap, constant scroll, fixed gap, no ramp. The classic sprite and audio set. The sub-two-second death-to-retry loop.
-- **Not taking:** the medal/results panel and the title screen (see §9.3), and the original's total absence of music — this build adds an original chiptune loop, because a silent 30-second retry loop is a worse teaching demo than a scored one.
+- **Not taking:** the medal/results panel and the title screen (see §8.3), and the original's total absence of music — this build adds an original chiptune loop, because a silent 30-second retry loop is a worse teaching demo than a scored one.
 
 ---
 
@@ -67,13 +67,12 @@ stateDiagram-v2
 - **Death:** overlap with a pipe trigger, or collision with the ground. The **ceiling is not lethal** — the bird is clamped at `y = 2.4` — so the player cannot fly over a pipe, but is never killed by the sky.
 - **On death:** white full-screen flash, `hit` immediately and `die` 0.3 s later, all scrolling stops dead in the same frame, and the bird keeps its gravity and tumbles to the ground while the results panel is already up. Input is ignored for 0.5 s so a panic-tap cannot skip the score.
 
----
+### Parameters you will need to tune
 
-## 4. Tuning Values
-
-Every value below is a serialised field of `Assets/Game/GameConfig.asset`, a ScriptableObject. Nothing
-here is hard-coded, so the whole game can be re-tuned in the Inspector without a recompile — which is
-the only reason the values in the *Notes* column below ever got found.
+None of these were right on the first attempt, and two of them changed after the very first playtest.
+Every one is a serialised field of `Assets/Game/GameConfig.asset`, a ScriptableObject — nothing here is
+hard-coded — so re-tuning costs seconds in the Inspector rather than a recompile. That is the only
+reason the values in the *Notes* column below were ever found.
 
 **1 world unit = 100 px of source art (PPU 100).** The camera is orthographic, `size = 2.56`, so it
 shows a fixed 5.12 u of height at any aspect ratio.
@@ -85,7 +84,7 @@ shows a fixed 5.12 u of height at any aspect ratio.
 | Gravity scale | `gravityScale` | 1.8 | Softened from 2.5 after the first playtest — the fall was unrecoverable |
 | Flap velocity (**set**, not added) | `flapVelocity` | +5.0 u/s | Softened from 6.5 for the same reason |
 | Terminal fall velocity | `terminalVelocity` | −10 u/s | Clamped, so a long dive stays survivable |
-| Ceiling clamp | `ceilingY` | 2.4 | Not lethal — see §3 |
+| Ceiling clamp | `ceilingY` | 2.4 | Not lethal — see the death rules above |
 | Scroll speed | `scrollSpeed` | 1.6 u/s | Constant for the whole run. Never ramps — pillar 3 |
 | Gap height | `gapHeight` | 1.2 u | Fixed for the whole run |
 | Pipe spacing | `pipeSpacing` | 1.8 u | ⇒ one pair every **1.125 s** at the scroll speed above |
@@ -101,7 +100,7 @@ The in-repo `AutoPilot` bot currently peaks at 18, which is the regression test 
 
 ---
 
-## 5. Controls & Input
+## 4. Controls & Input
 
 One logical action: **Flap**. `FlapInput.Pressed()` is a static poll over every device the Input System exposes.
 
@@ -113,29 +112,29 @@ One logical action: **Flap**. `FlapInput.Pressed()` is a static poll over every 
 - On `GetReady`, the first flap both starts physics **and** counts as the first flap. The bird must never appear to swallow the player's first input.
 - On `GameOver`, input is ignored for `restartLockout` = 0.5 s.
 - On focus loss mid-run (`OnApplicationPause`), `Time.timeScale` goes to 0 rather than the bird dying off-screen. The next tap resumes *and* flaps, so the player never loses a run to alt-tab.
-- ✂️ There is no `EventSystem.IsPointerOverGameObject()` guard, because there are no buttons — every UI element in the game is non-interactive. Adding a button means adding that guard.
+- There is no `EventSystem.IsPointerOverGameObject()` guard, because there are no buttons — every UI element in the game is non-interactive. Adding a button means adding that guard.
 
 ---
 
-## 6. Screens & UI
+## 5. Screens & UI
 
 There are no scenes but `Game.unity`, and no menus. The three states in §3 *are* the screen inventory.
 See the [screens figure](images/screens.png) above.
 
-1. **GetReady** ✅ — `message` sprite (logo + "Get Ready!" + tap hint) centred; score `0` in the HUD.
-2. **Playing (HUD)** ✅ — the score, top-centre, 40 px down, in the classic bitmap digits. Nothing else. No timer, no lives, no pause button, no ads — the HUD is deliberately one number.
-3. **GameOver** ✅ — `gameover` sprite at +140; `SCORE` / value; `BEST` / value; a `NEW!` tag when the best was beaten this run; `TAP TO RESTART`. Plus a one-frame white full-screen flash on death.
+1. **GetReady** — `message` sprite (logo + "Get Ready!" + tap hint) centred; score `0` in the HUD.
+2. **Playing (HUD)** — the score, top-centre, 40 px down, in the classic bitmap digits. Nothing else. No timer, no lives, no pause button, no ads — the HUD is deliberately one number.
+3. **GameOver** — `gameover` sprite at +140; `SCORE` / value; `BEST` / value; a `NEW!` tag when the best was beaten this run; `TAP TO RESTART`. Plus a one-frame white full-screen flash on death.
 
 **Canvas setup:** Screen Space – Camera, `CanvasScaler` in *Scale With Screen Size*, reference 288 × 512,
 `matchWidthOrHeight = 1` (height). The camera shows a fixed **world height**, so the UI must scale by
 height too or the HUD drifts relative to the playfield on other aspect ratios.
 
 **Known cosmetic issue:** `ScoreDisplay` lays every digit out on a fixed 24 px advance, but `1.png` is
-only 16 px wide, so a `1` is stretched. Fix is per-digit widths, or padding the sprite. 🔨
+only 16 px wide, so a `1` is stretched. The fix is per-digit widths, or padding the sprite to 24 px. Not done.
 
 ---
 
-## 7. Art & Audio
+## 6. Art & Audio
 
 ![Asset manifest](images/asset-manifest.png)
 
@@ -165,7 +164,7 @@ pipes `10` → ground `20` → bird `30` → UI canvas.
 
 ---
 
-## 8. Technical Design
+## 7. Technical Design
 
 **Scenes:** one — `Assets/Scenes/Game.unity`, the only scene in Build Settings.
 
@@ -210,20 +209,20 @@ graph TD
 - **Physics.** Dynamic `Rigidbody2D` with `gravityScale` from config, `Interpolate` on, continuous collision detection. All movement in `FixedUpdate` at 50 Hz, so the game plays identically at 60 and 120 Hz.
 - **Pooling.** Pipe pairs are pooled and recycled, never destroyed. Ground and background tiles are recycled by repositioning. **Nothing is instantiated during `Playing`** — a GC spike is a dropped frame, and a dropped frame in a one-input timing game is an unfair death, which breaks pillar 3.
 - **Restart reloads the scene** (`SceneManager.LoadScene`). This is a real trade-off, taken deliberately: reloading costs a few frames — measurably worse than resetting state in place — but it removes an entire class of "I forgot to reset that field" bugs, and at this scene size the reload is still comfortably inside the two-second budget of pillar 2. If it ever misses that budget, this is the first thing to change.
-- **Config.** Every gameplay number in §4 lives in one ScriptableObject.
+- **Config.** Every gameplay number from the §3 parameter table lives in one ScriptableObject.
 - **Persistence.** `PlayerPrefs["HighScore"]` only. No cloud, no accounts, no settings file.
 - **Frame rate.** `Application.targetFrameRate = 60` on every platform.
 
 ### The two course features this project demonstrates
 
 1. **Object pooling** — `PipeSpawner` keeps a `Queue<Transform>` of recycled pipe pairs and `ScrollingTiles` recycles ground/background tiles by repositioning them. Chosen here, rather than `Instantiate`/`Destroy`, because the spawn cadence is one pair every 1.125 s *forever*, and this is precisely the shape of workload where allocation churn turns into visible hitching.
-2. **ScriptableObject-driven configuration** — `GameConfig` holds all thirteen tuning values. Chosen because the design work in §4 was almost entirely re-tuning: two of those numbers changed after the very first playtest, and each change had to cost seconds, not a recompile.
+2. **ScriptableObject-driven configuration** — `GameConfig` holds all thirteen tuning values. Chosen because the design work was almost entirely re-tuning: two of those numbers changed after the very first playtest, and each change had to cost seconds, not a recompile.
 
 ---
 
-## 9. Scope
+## 8. Scope
 
-### 9.1 MVP ✅ — complete and playtested
+### 8.1 MVP — complete and playtested
 
 - [x] Bird physics, velocity-replacing flap, cosmetic rotation, 3-frame animation
 - [x] Pooled pipe pairs, random gap heights, aspect-aware spawn/despawn
@@ -234,48 +233,21 @@ graph TD
 - [x] Death flash, focus-loss freeze
 - [x] Desktop build (Windows / macOS)
 
-### 9.2 Polish 🔨 — not built
+### 8.2 Polish — not built
 
-- [ ] Per-digit widths in `ScoreDisplay` (see §6)
+- [ ] Per-digit widths in `ScoreDisplay` (see §5)
 - [ ] Mute toggle, persisted in `PlayerPrefs`
 - [ ] Mobile: safe-area handling, portrait lock, on-device testing
 - [ ] Score count-up animation and `swoosh` on the results panel
 
-### 9.3 Explicitly out of scope ✂️ — **not** being built
+### 8.3 Explicitly out of scope — **not** being built
 
 - **Title screen and menus.** The GetReady state already does the job in one tap fewer, and pillar 2 says every tap between death and the next run is a cost.
 - **Medals (bronze/silver/gold/platinum).** The classic asset pack contains no medal sprites, so this is an art task, not a code task — and it adds a beat to the results panel that pillar 2 argues against.
-- **A pause screen.** Focus loss freezes the game, which covers the only case that actually loses runs. A pause button would be the first interactive UI element in the game and would drag in the `EventSystem` guard from §5.
+- **A pause screen.** Focus loss freezes the game, which covers the only case that actually loses runs. A pause button would be the first interactive UI element in the game and would drag in the `EventSystem` guard from §4.
 - **Ads, IAP, leaderboards, accounts, any online service.**
 - **Difficulty ramping, power-ups, multiple game modes, level progression.** Pillar 3. The classic's purity is the product.
 - **`Enemy.cs`** — a leftover empty stub from a lesson demo. It is not part of this design; delete it.
-
----
-
-## 10. Plan, Risks & Open Questions
-
-### Milestones
-
-| Milestone | Contents | Status |
-|---|---|---|
-| M1 — Greybox | Bird physics, placeholder pipes, death & restart, feel tuned | ✅ |
-| M2 — MVP | §9.1 with the classic assets | ✅ |
-| M3 — Polish | §9.2, mobile tested on device | 🔨 |
-
-### Risks
-
-| Risk | Impact | Mitigation |
-|---|---|---|
-| Classic assets end up in a public build | Legal / takedown | §7 policy; all art loaded by name so a reskin is a folder swap |
-| The feel drifts away from the reference | Pillar 1 fails | `GameConfig` for live tuning; `AutoPilot` best-score as a regression signal; side-by-side with the reference video |
-| A frame hitch causes an unfair death | Pillar 3 fails | Zero allocations during `Playing`; pooling everywhere; profiler pass before any release |
-| This document drifts from the build | The document becomes decoration | Status markers (✅/🔨/✂️) on every claim, and a changelog that says what changed and why |
-
-### Open questions
-
-1. Should the ceiling ever become lethal at high scores as a soft difficulty ramp? **Current lean: no** — it contradicts pillar 3 outright.
-2. Is a WebGL build worth it for easy sharing? **Current lean: only after a CC0 reskin**, because a public web host is exactly what §7 forbids.
-3. Should `restartLockout` scale with score, so a good run is harder to skip past? **Current lean: no** — inconsistent input timing is worse than a skipped score panel.
 
 ---
 
@@ -283,5 +255,5 @@ graph TD
 
 | Version | Date | Change |
 |---|---|---|
-| v2.0 | 2026-08-30 | Reconciled the document against the shipped build. Corrected four claims that had drifted: restart **does** reload the scene (and this is now documented as a deliberate trade-off rather than an accident); the background **does** parallax at 0.25×; there **is** a music loop; medals, the title screen and the pause screen are **not** built and have moved to §9.3 with reasons. Replaced the ASCII loop diagram with Mermaid, added the playfield-geometry, screens and asset-manifest figures, and added ✅/🔨/✂️ status markers throughout. |
+| v2.0 | 2026-08-30 | Reconciled the document against the shipped build. Corrected four claims that had drifted: restart **does** reload the scene (and this is now documented as a deliberate trade-off rather than an accident); the background **does** parallax at 0.25×; there **is** a music loop; medals, the title screen and the pause screen are **not** built and have moved to §8.3 with reasons. Replaced the ASCII loop diagram with Mermaid, added the playfield-geometry, screens and asset-manifest figures, folded the tuning values into §3 as the set of parameters that needed turning, and dropped the milestone/risk section now that the project has shipped. |
 | v1.0 | 2026-07-19 | Initial document, written before implementation |
